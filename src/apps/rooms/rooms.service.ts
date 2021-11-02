@@ -2,8 +2,8 @@ import { GenerateRoomDto } from './dto/GenerateRoomDto';
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { Room, User } from './types/room';
 import { classToPlain } from 'class-transformer';
-import moment from 'moment';
-import { Cron, CronExpression } from '@nestjs/schedule';
+import * as moment from 'moment';
+import { Cron } from '@nestjs/schedule';
 
 @Injectable()
 export class RoomsService {
@@ -68,9 +68,9 @@ export class RoomsService {
     this.rooms.forEach((room) => {
       const usersQuantity = room.users.size;
       const lastJoined = room.lastJoined;
-      const lastJoinIsBefore10MinutesAgo = room.lastJoined.isBefore(
-        moment().subtract(10, 'minutes'),
-      );
+      const lastJoinIsBefore10MinutesAgo =
+        room.lastJoined &&
+        room.lastJoined.isBefore(moment().subtract(10, 'minutes'));
       this.logger.log(
         `::verifyInactiveRooms::users quantity::${usersQuantity}`,
       );
