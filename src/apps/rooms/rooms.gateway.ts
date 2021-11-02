@@ -12,7 +12,7 @@ import { Server, Socket } from 'socket.io';
 import { RoomsService } from './rooms.service';
 import { WsEnterOnRoomPayload, WsAddVideoPayload } from './types/room';
 
-@WebSocketGateway(8081, {
+@WebSocketGateway({
   cors: {
     origin: '*',
   },

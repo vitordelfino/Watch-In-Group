@@ -8,5 +8,5 @@ RUN yarn global add pm2
 RUN yarn install
 RUN yarn build
 ADD ./dist /app
-EXPOSE 8080 8081
+EXPOSE 8080
 CMD [ "pm2-runtime", "main.js"]
