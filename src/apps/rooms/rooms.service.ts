@@ -1,12 +1,14 @@
 import { GenerateRoomDto } from './dto/GenerateRoomDto';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { Room, User } from './types/room';
 import { classToPlain } from 'class-transformer';
+import moment from 'moment';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class RoomsService {
   private rooms = new Map<string, Room>();
-
+  private readonly logger = new Logger('RoomsService');
   public generateRoom(generateRoomDto: GenerateRoomDto): Room {
     const id = Math.random().toString(36).substr(2, 9);
     const plain = classToPlain(generateRoomDto);
@@ -37,6 +39,7 @@ export class RoomsService {
 
   public addUser(id: string, user: User): void {
     const room = this.rooms.get(id);
+    room.lastJoined = moment();
     room.users.set(user.id, user);
   }
 
@@ -57,5 +60,32 @@ export class RoomsService {
       throw new NotFoundException(`Room with id ${roomId} not found`);
     }
     room.videos.set(url, url);
+  }
+
+  @Cron('*/10 * * * *')
+  verifyInactiveRooms(): void {
+    this.logger.log(`::verifyInactiveRooms::`);
+    this.rooms.forEach((room) => {
+      const usersQuantity = room.users.size;
+      const lastJoined = room.lastJoined;
+      const lastJoinIsBefore10MinutesAgo = room.lastJoined.isBefore(
+        moment().subtract(10, 'minutes'),
+      );
+      this.logger.log(
+        `::verifyInactiveRooms::users quantity::${usersQuantity}`,
+      );
+      this.logger.log(`::verifyInactiveRooms::last joined::${lastJoined}`);
+      this.logger.log(
+        `::verifyInactiveRooms::last joined is before 10 minutes ago::${lastJoinIsBefore10MinutesAgo}`,
+      );
+      if (
+        room.users.size === 0 &&
+        room.lastJoined &&
+        room.lastJoined.isBefore(moment().subtract(10, 'minutes'))
+      ) {
+        this.logger.log(`::verifyInactiveRooms::room is inactive::${room.id}`);
+        this.rooms.delete(room.id);
+      }
+    });
   }
 }

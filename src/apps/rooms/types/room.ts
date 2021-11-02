@@ -1,7 +1,9 @@
+import moment from 'moment';
+
 export interface Room {
   id: string;
   owner: Owner;
-
+  lastJoined?: moment.Moment;
   users: Map<string, User>;
 
   videos: Map<string, string>;
