@@ -1,0 +1,60 @@
+syntax = "proto3";
+package group;
+option go_package = "grpc/pb";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+service GroupService {
+  rpc GenerateGroup(GenerateGroupRequest) returns (GenerateGroupResponse);
+  rpc GetGroup(GetGroupRequest) returns (GenerateGroupResponse);
+  rpc GetAllGroups(google.protobuf.Empty) returns (GetAllGroupsResponse);
+  rpc AddUser(AddUserRequest) returns (google.protobuf.Empty);
+  rpc RemoveUser(RemoveUserRequest) returns (google.protobuf.Empty);
+  rpc AddVideo(AddVideoRequest) returns (google.protobuf.Empty);
+}
+
+message Owner {
+  string id = 1;
+  string name = 2;
+}
+
+message User {
+  string id = 1;
+  string name = 2;
+}
+
+message GenerateGroupRequest {
+  string owner = 1;
+}
+
+message GenerateGroupResponse {
+  string id = 1;
+  Owner owner = 2;
+  google.protobuf.Timestamp lastJoinedAt = 3;
+  map<string, User> users = 4;
+  map<string, string> videos = 5;
+}
+
+message GetGroupRequest {
+  string id = 1;
+}
+
+message GetAllGroupsResponse {
+  repeated GenerateGroupResponse groups = 1;
+}
+
+message AddUserRequest {
+  User user = 1;
+  string groupId = 2;
+}
+
+message RemoveUserRequest {
+  string userId = 1;
+}
+
+message AddVideoRequest {
+  string video = 1;
+  string groupId = 2;
+}
+
