@@ -2,21 +2,24 @@ import { RoomsService } from './rooms.service';
 import { Test, TestingModule } from '@nestjs/testing';
 import { RoomsGateway } from './rooms.gateway';
 import { mock } from 'jest-mock-extended';
-import { Socket, Server } from 'socket.io';
+import { Server, Socket } from 'socket.io';
 import { Room } from './types/room';
+import { Logger } from '@nestjs/common';
 
 describe('RoomsGateway', () => {
   let gateway: RoomsGateway;
   const serviceMock = mock<RoomsService>();
   const socketMock = { id: 'client-id' } as Socket;
   const serverMock = mock<Server>();
-
+  const loggerMock = mock<Logger>();
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [RoomsGateway, RoomsService, Server],
     })
       .overrideProvider(RoomsService)
       .useValue(serviceMock)
+      .overrideProvider(Logger)
+      .useValue(loggerMock)
       .compile();
 
     gateway = module.get<RoomsGateway>(RoomsGateway);
