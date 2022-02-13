@@ -4,11 +4,15 @@ import { Room, User } from './types/room';
 import { classToPlain } from 'class-transformer';
 import * as moment from 'moment';
 import { Cron } from '@nestjs/schedule';
+import { YoutubeService } from '../youtube/youtube.service';
 
 @Injectable()
 export class RoomsService {
   private rooms = new Map<string, Room>();
   private readonly logger = new Logger('RoomsService');
+
+  constructor(private youtubeService: YoutubeService) {}
+
   public generateRoom(generateRoomDto: GenerateRoomDto): Room {
     const id = Math.random().toString(36).substr(2, 9);
     const plain = classToPlain(generateRoomDto);
@@ -54,12 +58,33 @@ export class RoomsService {
     throw new Error('Nothin to remove');
   }
 
-  public addVideo(roomId: string, url: string): void {
+  public async addVideo(roomId: string, url: string): Promise<void> {
     const room = this.rooms.get(roomId);
     if (!room) {
       throw new NotFoundException(`Room with id ${roomId} not found`);
     }
-    room.videos.set(url, url);
+
+    const youtubeVideo = await this.youtubeService.getVideo(url);
+    if (room.videos.size === 0) room.currentVideo = youtubeVideo;
+
+    room.videos.set(url, youtubeVideo);
+  }
+
+  public removeVideo(roomId: string, url: string): void {
+    const room = this.rooms.get(roomId);
+    if (!room) {
+      throw new NotFoundException(`Room with id ${roomId} not found`);
+    }
+    if (room.currentVideo.url === url) room.currentVideo = undefined;
+    room.videos.delete(url);
+  }
+
+  public changeCurrentVideo(roomId: string, url: string): void {
+    const room = this.rooms.get(roomId);
+    if (!room) {
+      throw new NotFoundException(`Room with id ${roomId} not found`);
+    }
+    room.currentVideo = room.videos.get(url);
   }
 
   @Cron('*/10 * * * *')

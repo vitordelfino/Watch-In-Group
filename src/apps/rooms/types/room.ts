@@ -1,4 +1,5 @@
 import moment from 'moment';
+import { YoutubeVideo } from '../../youtube/youtube.service';
 
 export interface Room {
   id: string;
@@ -6,7 +7,8 @@ export interface Room {
   lastJoined?: moment.Moment;
   users: Map<string, User>;
 
-  videos: Map<string, string>;
+  videos: Map<string, YoutubeVideo>;
+  currentVideo?: YoutubeVideo;
 }
 
 export interface User {

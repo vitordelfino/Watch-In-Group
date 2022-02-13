@@ -50,9 +50,12 @@ export class RoomsGateway
   }
 
   @SubscribeMessage('add-video')
-  handleAddVideo(client: Socket, payload: WsAddVideoPayload): void {
+  async handleAddVideo(
+    client: Socket,
+    payload: WsAddVideoPayload,
+  ): Promise<void> {
     this.logger.log(`Add video ${payload.video} on room ${payload.room}`);
-    this.roomService.addVideo(payload.room, payload.video);
+    await this.roomService.addVideo(payload.room, payload.video);
     this.server.to(payload.room).emit('video-added', payload);
   }
 
@@ -70,6 +73,22 @@ export class RoomsGateway
 
   afterInit(server: Server) {
     this.logger.log('Init');
+  }
+
+  @SubscribeMessage('remove-video')
+  handleRemoveVideo(client: Socket, payload: WsAddVideoPayload): void {
+    this.logger.log(`Remove video ${payload.video} on room ${payload.room}`);
+    this.roomService.removeVideo(payload.room, payload.video);
+    this.server.to(payload.room).emit('video-removed', payload);
+  }
+
+  @SubscribeMessage('change-current-video')
+  handleChangeCurrentTime(client: Socket, payload: WsAddVideoPayload): void {
+    this.logger.log(
+      `Change current video ${payload.video} on room ${payload.room}`,
+    );
+    this.roomService.changeCurrentVideo(payload.room, payload.video);
+    this.server.to(payload.room).emit('current-video-changed', payload);
   }
 
   handleDisconnect(client: Socket) {
